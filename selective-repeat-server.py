@@ -73,9 +73,9 @@ def main():
 	fileHandler = open(filename,'a')
 	for i in range(0, maxSeqNum):
 		fileHandler.write(buffer[i])
-	fileHandler.close()
-	print('File Received Successfully at the Server')
-	server_socket.close()	
+	# fileHandler.close()
+	# print('File Received Successfully at the Server')
+	# server_socket.close()	
 	
 if __name__ == '__main__':	
 	main()
