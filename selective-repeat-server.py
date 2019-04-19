@@ -4,33 +4,34 @@ import struct
 import random
 import threading
 
-def unpack_message(msg):					#Parsing the Message received from client
-	header = msg[0:8]
-	data = msg[8:]	
-	sequenceNum = struct.unpack('=I',header[0:4])		
-	checksum = struct.unpack('=H',header[4:6])
-	identifier = struct.unpack('=H',header[6:])
-	dataDecoded = data.decode('UTF-8')	
-	return sequenceNum, checksum, identifier, dataDecoded
+def message_from_sender(message):						
+	seq_num = struct.unpack('=I',message[0:4])		
+	checksum = struct.unpack('=H',message[4:6])
+	data_identifier = struct.unpack('=H',message[6:8])
+	data = message[8:].decode('UTF-8')	
+	return seq_num, checksum, data_identifier, data
 	
 def generate_ack_packets(seqAcked, type):
-	seqNum 		 = struct.pack('=I', seqAcked)	#SEQUENCE NUMBER BEING ACKED	
+	seq_num = struct.pack('=I', seqAcked)
 	if type != 0:
-		zero16 	 = struct.pack('=H', 1)
+		null = struct.pack('=H', 1)
 	else:
-		zero16 	 = struct.pack('=H', 0)
-	ackIndicator = struct.pack('=H',43690)		#ACK INDICATOR - 1010101010101010[INT 43690]
-	ackPacket = seqNum+zero16+ackIndicator
+		null = struct.pack('=H', 0)
+	data_packet = struct.pack('=H',43690)		
+	ackPacket = seq_num + null + data_packet
 	return ackPacket
 
-def verifyChecksum(data, checksum):
+def carry_around_add(self, x, y):
+		return ((x+y) & 0xffff) + ((x + y) >> 16)
+
+def checksum_computation(data, checksum):
 	sum = 0
 	
 	for i in range(0, len(data), 2):
 		if i+1 < len(data):
-			data16 = ord(data[i]) + (ord(data[i+1]) << 8)		#To take 16 bits at a time
+			data16 = ord(data[i]) + (ord(data[i+1]) << 8)		
 			interSum = sum + data16
-			sum = (interSum & 0xffff) + (interSum >> 16)		#To ensure 16 bits
+			sum = (interSum & 0xffff) + (interSum >> 16)
 	currChk = sum & 0xffff 
 	result = currChk & checksum
 	
@@ -40,42 +41,42 @@ def verifyChecksum(data, checksum):
 		return True
 	
 def main():
-	port = int(sys.argv[1])		#PORT ON WHICH SERVER WILL ACCEPT UDP PACKETS
-	filename = sys.argv[2]		#NAME OF THE NEW FILE CREATED
-	prob = float(sys.argv[3])	#PACKET DROP PROBABILITY
+	port = int(sys.argv[1])		
+	filename = sys.argv[2]		
+	probability = float(sys.argv[3])	
 	buffer = {}			
 	flag = True
-	maxSeqNum = 0
+	maxseq_num = 0
 	
 	server_socket  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)	
 	host = socket.gethostname()
 	server_socket.bind((host,port)) 
 	
 		
-	while flag or len(buffer) < maxSeqNum:
+	while flag or len(buffer) < maxseq_num:
 		receivedMsg, sender_addr = server_socket.recvfrom(1024)
-		sequenceNum, checksum, identifier, data = unpack_message(receivedMsg) 
-		if random.uniform(0,1) <= prob:
-			print('PACKET LOSS, SEQUENCE NUMBER = '+str(sequenceNum[0]))
+		seq_num, checksum, data_identifier, data = message_from_sender(receivedMsg) 
+		if random.random() <= probability:
+			print('Packet loss, sequence number = '+str(seq_num[0]))
 		else:
-			chksumVerification = verifyChecksum(data, int(checksum[0]))
+			chksumVerification = checksum_computation(data, int(checksum[0]))
 			if chksumVerification == True:
 				if data == '00000end11111':
 					flag = False
-					maxSeqNum = int(sequenceNum[0])
-				elif data != '00000end11111' and int(sequenceNum[0]) not in buffer:
-						buffer[int(sequenceNum[0])] = data						
-				ackPacket = generate_ack_packets(int(sequenceNum[0]),0)
+					maxseq_num = int(seq_num[0])
+				elif data != '00000end11111' and int(seq_num[0]) not in buffer:
+						buffer[int(seq_num[0])] = data						
+				ackPacket = generate_ack_packets(int(seq_num[0]),0)
 				server_socket.sendto(ackPacket,sender_addr)
 	
-	ackPacket = generate_ack_packets(maxSeqNum+1,1)
+	ackPacket = generate_ack_packets(maxseq_num+1,1)
 	server_socket.sendto(ackPacket,sender_addr)
 	fileHandler = open(filename,'a')
-	for i in range(0, maxSeqNum):
+	for i in range(0, maxseq_num):
 		fileHandler.write(buffer[i])
-	# fileHandler.close()
-	# print('File Received Successfully at the Server')
-	# server_socket.close()	
+	fileHandler.close()
+	print('File Received Successfully at the Server')
+	server_socket.close()	
 	
 if __name__ == '__main__':	
 	main()
