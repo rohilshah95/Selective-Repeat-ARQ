@@ -46,12 +46,15 @@ def main():
 	probability = float(sys.argv[3])	
 	buffer = {}			
 	flag = True
+
 	maxseq_num = 0
-	
+	print("Server's port - " + str(port))
+	print("filename - " + filename)
+	print("probability - " + str(probability))
 	server_socket  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)	
 	host = socket.gethostname()
 	server_socket.bind((host,port)) 
-	
+	print(host)
 		
 	while flag or len(buffer) < maxseq_num:
 		receivedMsg, sender_addr = server_socket.recvfrom(1024)
