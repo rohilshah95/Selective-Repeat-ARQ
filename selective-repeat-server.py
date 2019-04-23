@@ -61,10 +61,10 @@ def main():
 		else:
 			chksumVerification = checksum_computation(data, int(checksum[0]))
 			if chksumVerification == True:
-				if data == '00000end11111':
+				if data == '0101end0101':
 					flag = False
 					maxseq_num = int(seq_num[0])
-				elif data != '00000end11111' and int(seq_num[0]) not in buffer:
+				elif data != '0101end0101' and int(seq_num[0]) not in buffer:
 						buffer[int(seq_num[0])] = data						
 				ackPacket = generate_ack_packets(int(seq_num[0]),0)
 				server_socket.sendto(ackPacket,sender_addr)

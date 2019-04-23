@@ -84,7 +84,7 @@ class Sender(threading.Thread):
 				currSeq += 1
 				data_sent = ''
 						
-		data_sent = '00000end11111'
+		data_sent = '0101end0101'
 		lock.acquire()
 		data_packet = struct.pack('=H',21845)
 		seq_number = struct.pack('=I',currSeq)
