@@ -69,7 +69,7 @@ def main():
 					maxseq_num = int(seq_num[0])
 				elif data != '0101end0101' and int(seq_num[0]) not in buffer:
 						buffer[int(seq_num[0])] = data						
-				ackPacket = generate_ack_packets(int(seq_num[0]),0)
+				ackPacket = generate_ack_packets(int(seq_num[0])+1,0)
 				server_socket.sendto(ackPacket,sender_addr)
 	
 	ackPacket = generate_ack_packets(maxseq_num+1,1)
