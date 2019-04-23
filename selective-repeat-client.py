@@ -131,11 +131,11 @@ class receiver(threading.Thread):
 					print('Receiver Terminated')
 					break
 				#16 bit identifier field to identify the ACK packets - 1010101010101010 [in int 43690]		
-				if int(identifier[0]) == 43690 and int(seq_number[0]+1) in window:
+				if int(identifier[0]) == 43690 and int(seq_number[0]) in window:
 					lock.acquire()
 					# setTime = window[int(seq_number[0])][1]
 					# window[int(seq_number[0])] = (window[int(seq_number[0])][0],setTime, 1)					
-					del window[int(seq_number[0])+1]
+					del window[int(seq_number[0])]
 					lock.release()
 		except:
 			print('Server closed its connection - Receiver')
