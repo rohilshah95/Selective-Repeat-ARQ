@@ -7,7 +7,6 @@ import threading
 TIMEOUT_TIMER = 0.2
 lock = threading.Lock()
 window = {}
-closeFlag = True
 maxseq_number = -1
 
 class Sender(threading.Thread):
@@ -120,21 +119,15 @@ class receiver(threading.Thread):
 	def run(self):
 		global lock	
 		global window
-		global closeFlag
-
-		closeFlag = True
 		try:
-			while closeFlag == True or len(window) > 0:			
-				ackReceived, server_addr = self.socket_client.recvfrom(2048)			#Receives the ACK packets 
+			while True or len(window) > 0:			
+				ackReceived, server_addr = self.socket_client.recvfrom(2048)
 				seq_number , null, identifier = self.message_from_sender(ackReceived)
 				if int(null[0]) > 0:
 					print('Receiver Terminated')
 					break
-				#16 bit identifier field to identify the ACK packets - 1010101010101010 [in int 43690]		
 				if int(identifier[0]) == 43690 and int(seq_number[0]) in window:
-					lock.acquire()
-					# setTime = window[int(seq_number[0])][1]
-					# window[int(seq_number[0])] = (window[int(seq_number[0])][0],setTime, 1)					
+					lock.acquire()					
 					del window[int(seq_number[0])]
 					lock.release()
 		except:
