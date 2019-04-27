@@ -1,5 +1,9 @@
 # CSC 573 - Internet Protocols Project 2
 
+### Team:
+* Rohil Shah (rshah8, 200204305)
+* Sharvari Deshpande (shdeshpa, 200206230)
+
 ## Selective Repeat Automatic Repeat Request Protocol
 
 To run the server: 
