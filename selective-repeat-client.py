@@ -38,7 +38,7 @@ class Sender(threading.Thread):
 		seq_number = struct.pack('=I',seq)
 		checksum_val = self.checksum_computation(data)
 		checksum = struct.pack('=H',checksum_val)
-		packet = seq_number+checksum+data_packet+bytes(data,'UTF-8')
+		packet = seq_number + checksum + data_packet + bytes(data,'UTF-8')
 		return packet
 		
 	def run(self):
@@ -61,7 +61,7 @@ class Sender(threading.Thread):
 		global maxseq_number
 
 		fileHandle = open(self.file,'rb')
-		currSeq = 0
+		current_sequence = 0
 		data_sent = ''
 		
 		b = True
@@ -73,29 +73,29 @@ class Sender(threading.Thread):
 					self.retransmitter(self.host,self.port)
 				lock.acquire()
 				data_packet = struct.pack('=H',21845)
-				seq_number = struct.pack('=I',currSeq)
+				seq_number = struct.pack('=I',current_sequence)
 				checksum_val = self.checksum_computation(data_sent)
 				checksum = struct.pack('=H',checksum_val)
 				packet = seq_number+checksum+data_packet+bytes(data_sent,'UTF-8')
-				# packet = self.create_packet(data_sent, currSeq)				
-				window[currSeq] = (packet, time.time(), 0)
+				# packet = self.create_packet(data_sent, current_sequence)				
+				window[current_sequence] = (packet, time.time(), 0)
 				self.sock.sendto(packet,(self.host, self.port))
 				lock.release()
-				currSeq += 1
+				current_sequence += 1
 				data_sent = ''
 						
 		data_sent = '0101end0101'
 		lock.acquire()
 		data_packet = struct.pack('=H',21845)
-		seq_number = struct.pack('=I',currSeq)
+		seq_number = struct.pack('=I',current_sequence)
 		checksum_val = self.checksum_computation(data_sent)
 		checksum = struct.pack('=H',checksum_val)
 		packet = seq_number+checksum+data_packet+bytes(data_sent,'UTF-8')
-		# packet = self.create_packet(data_sent, currSeq)				
-		window[currSeq] = (packet, time.time(), 0)
+		# packet = self.create_packet(data_sent, current_sequence)				
+		window[current_sequence] = (packet, time.time(), 0)
 		self.sock.sendto(packet,(self.host, self.port))
 		lock.release()
-		maxseq_number = currSeq
+		maxseq_number = current_sequence
 		while len(window) > 0:
 			self.retransmitter(self.host,self.port)
 		fileHandle.close()	
