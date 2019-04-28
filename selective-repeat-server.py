@@ -3,6 +3,8 @@ import socket
 import struct
 import random
 import threading
+from common import carry_around_add, checksum_computation
+
 
 def message_from_sender(message):						
 	seq_num = struct.unpack('=I',message[0:4])		
@@ -21,18 +23,8 @@ def generate_ack_packets(seqAcked, type):
 	ackPacket = seq_num + null + data_packet
 	return ackPacket
 
-def carry_around_add(self, x, y):
-		return ((x+y) & 0xffff) + ((x + y) >> 16)
-
-def checksum_computation(data, checksum):
-	sum = 0
-	
-	for i in range(0, len(data), 2):
-		if i+1 < len(data):
-			data16 = ord(data[i]) + (ord(data[i+1]) << 8)		
-			interSum = sum + data16
-			sum = (interSum & 0xffff) + (interSum >> 16)
-	currChk = sum & 0xffff 
+def compare_checksum(data, checksum):
+	currChk = checksum_computation(data)
 	result = currChk & checksum
 	
 	if result != 0:
@@ -62,7 +54,7 @@ def main():
 		if random.random() <= probability:
 			print('Packet loss, sequence number = '+str(seq_num[0]))
 		else:
-			chksumVerification = checksum_computation(data, int(checksum[0]))
+			chksumVerification = compare_checksum(data, int(checksum[0]))
 			if chksumVerification == True:
 				if data == '0101end0101':
 					flag = False
