@@ -3,6 +3,7 @@ import socket
 import time
 import struct
 import threading
+from common import carry_around_add, checksum_computation
 
 TIMEOUT_TIMER = 0.2
 lock = threading.Lock()
@@ -19,18 +20,7 @@ class Sender(threading.Thread):
 		self.MSS  = int(MSS)
 		self.sock = socket_client
 		self.r = receiver
-		self.start()		
-
-	def carry_around_add(self, x, y):
-		return ((x+y) & 0xffff) + ((x + y) >> 16)
-
-	def checksum_computation(self, message):
-		add = 0
-		for i in range(0, len(message) - len(message) % 2, 2):
-			message = str(message)
-			w = ord(message[i]) + (ord(message[i + 1]) << 8)
-			add = self.carry_around_add(add, w)
-		return ~add & 0xffff								
+		self.start()								
 				
 	def create_packet(self, data, seq):
 		data_packet = struct.pack('=H',21845)
